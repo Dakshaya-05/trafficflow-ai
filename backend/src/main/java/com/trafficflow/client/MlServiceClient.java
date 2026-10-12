@@ -25,8 +25,22 @@ public class MlServiceClient {
         this.restTemplate = restTemplate;
     }
 
+    private String getNormalizedUrl() {
+        if (mlServiceUrl == null || mlServiceUrl.isBlank()) {
+            return "http://localhost:8000";
+        }
+        String url = mlServiceUrl.trim();
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            url = "http://" + url;
+        }
+        if (!url.contains(":", 8) && !url.contains(".")) {
+            url = url + ":10000";
+        }
+        return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+    }
+
     public PredictionResponseDto predict(PredictionRequestDto requestDto) {
-        String endpoint = mlServiceUrl + "/predict";
+        String endpoint = getNormalizedUrl() + "/predict";
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -49,7 +63,7 @@ public class MlServiceClient {
     }
 
     public Map<String, Object> getMetrics() {
-        String endpoint = mlServiceUrl + "/metrics";
+        String endpoint = getNormalizedUrl() + "/metrics";
         try {
             ResponseEntity<Map> response = restTemplate.getForEntity(endpoint, Map.class);
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {

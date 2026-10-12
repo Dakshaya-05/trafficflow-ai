@@ -29,8 +29,22 @@ public class AiPredictionClient implements AiPredictorClient {
         this.restTemplate = restTemplate;
     }
 
+    private String getNormalizedUrl() {
+        if (aiServiceUrl == null || aiServiceUrl.isBlank()) {
+            return "http://localhost:8000";
+        }
+        String url = aiServiceUrl.trim();
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            url = "http://" + url;
+        }
+        if (!url.contains(":", 8) && !url.contains(".")) {
+            url = url + ":10000";
+        }
+        return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+    }
+
     public TrafficPredictResponseDto predict(TrafficPredictRequestDto requestDto) {
-        String endpoint = aiServiceUrl + "/api/traffic/predict";
+        String endpoint = getNormalizedUrl() + "/api/traffic/predict";
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);

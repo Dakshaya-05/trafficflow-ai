@@ -13,5 +13,5 @@ COPY --from=build /app/target/trafficflow-backend-1.0.0.jar app.jar
 # Render assigns dynamic port via $PORT
 EXPOSE 8080 10000
 
-ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -Xss512k"
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
