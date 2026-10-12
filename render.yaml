@@ -1,7 +1,14 @@
 # ==============================================================================
 # Render Blueprint Specification for TrafficFlow AI
-# Deploy both the Python AI Prediction Service and Spring Boot Backend together
+# 1-Click Zero-Configuration Deployment: Free Cloud Database + Python AI + Spring Boot Backend
 # ==============================================================================
+
+databases:
+  - name: trafficflow-db
+    databaseName: trafficflow
+    user: trafficflow_user
+    plan: free
+    region: oregon
 
 services:
   # 1. Python AI Prediction Service (FastAPI + Random Forest)
@@ -15,7 +22,7 @@ services:
     healthCheckPath: /health
     autoDeploy: true
 
-  # 2. Java Spring Boot Backend (Java 21 + MySQL + Spring Security)
+  # 2. Java Spring Boot Backend (Java 21 + MySQL / PostgreSQL + Spring Security)
   - type: web
     name: trafficflow-backend
     runtime: docker
@@ -27,18 +34,12 @@ services:
     autoDeploy: true
     envVars:
       - key: DB_URL
-        sync: false
-        # Example: jdbc:mysql://<host>:3306/<database>?useSSL=true&serverTimezone=UTC&allowPublicKeyRetrieval=true
-      - key: DB_USERNAME
-        sync: false
-      - key: DB_PASSWORD
-        sync: false
+        fromDatabase:
+          name: trafficflow-db
+          property: connectionString
       - key: JWT_SECRET
         generateValue: true
       - key: AI_SERVICE_URL
-        fromService:
-          name: trafficflow-ai-service
-          type: web
-          property: host
+        value: http://trafficflow-ai-service:10000
       - key: CORS_ORIGINS
         value: https://*.vercel.app,http://localhost:5173

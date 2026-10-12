@@ -37,7 +37,7 @@ public class AiPredictionClient implements AiPredictorClient {
         if (!url.startsWith("http://") && !url.startsWith("https://")) {
             url = "http://" + url;
         }
-        if (!url.contains(":", 8) && !url.contains(".")) {
+        if (url.indexOf(":", 8) == -1 && !url.contains(".")) {
             url = url + ":10000";
         }
         return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
