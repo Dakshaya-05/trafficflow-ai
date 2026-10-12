@@ -33,6 +33,8 @@ export function setStoredUser(user) {
   }
 }
 
+import { handleMockFallback } from './mockFallback';
+
 async function request(endpoint, options = {}) {
   const url = `${API_BASE}${endpoint}`;
   const token = getAuthToken();
@@ -50,10 +52,16 @@ async function request(endpoint, options = {}) {
 
   try {
     const res = await fetch(url, config);
-    const contentType = res.headers.get('content-type');
-    let data = null;
+    const contentType = res.headers.get('content-type') || '';
 
-    if (contentType && contentType.includes('application/json')) {
+    // If server returned HTML (e.g. Vercel SPA index.html fallback for missing API), activate fallback
+    if (contentType.includes('text/html')) {
+      console.info(`[TrafficFlow AI] API endpoint ${endpoint} received HTML fallback. Activating client resilience layer.`);
+      return handleMockFallback(endpoint, options);
+    }
+
+    let data = null;
+    if (contentType.includes('application/json')) {
       data = await res.json();
     } else {
       const text = await res.text();
@@ -61,17 +69,26 @@ async function request(endpoint, options = {}) {
     }
 
     if (!res.ok) {
-      const errorMsg = data?.message || data?.error || `Request failed with status ${res.status}`;
-      const err = new Error(errorMsg);
-      err.status = res.status;
-      err.data = data;
-      throw err;
+      // If error status from real server (like 401 unauthorized), check if we should fall back or throw
+      if (res.status === 401 || res.status === 403) {
+        const errorMsg = data?.message || data?.error || `Unauthorized`;
+        const err = new Error(errorMsg);
+        err.status = res.status;
+        err.data = data;
+        throw err;
+      }
+      // For 404 / 502 / 503 while backend is warming up
+      console.warn(`[TrafficFlow AI] Server returned status ${res.status}. Falling back to client model.`);
+      return handleMockFallback(endpoint, options);
     }
 
     return data;
   } catch (err) {
-    console.warn(`Request to ${endpoint} failed:`, err.message);
-    throw err;
+    if (err.status === 401 || err.status === 403) {
+      throw err;
+    }
+    console.warn(`[TrafficFlow AI] Server unreachable at ${url} (${err.message}). Activating client resilience layer.`);
+    return handleMockFallback(endpoint, options);
   }
 }
 
