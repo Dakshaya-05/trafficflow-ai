@@ -1,0 +1,44 @@
+# ==============================================================================
+# Render Blueprint Specification for TrafficFlow AI
+# Deploy both the Python AI Prediction Service and Spring Boot Backend together
+# ==============================================================================
+
+services:
+  # 1. Python AI Prediction Service (FastAPI + Random Forest)
+  - type: web
+    name: trafficflow-ai-service
+    runtime: docker
+    dockerContext: ./ai-service
+    dockerfilePath: ./ai-service/Dockerfile
+    plan: free
+    region: oregon
+    healthCheckPath: /health
+    autoDeploy: true
+
+  # 2. Java Spring Boot Backend (Java 21 + MySQL + Spring Security)
+  - type: web
+    name: trafficflow-backend
+    runtime: docker
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    plan: free
+    region: oregon
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: DB_URL
+        sync: false
+        # Example: jdbc:mysql://<host>:3306/<database>?useSSL=true&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: AI_SERVICE_URL
+        fromService:
+          name: trafficflow-ai-service
+          type: web
+          property: host
+      - key: CORS_ORIGINS
+        value: https://*.vercel.app,http://localhost:5173

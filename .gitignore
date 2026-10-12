@@ -1,0 +1,58 @@
+# Operating Systems
+.DS_Store
+Thumbs.db
+
+# Node / Frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Java / Spring Boot
+target/
+*.class
+*.jar
+*.war
+.mvn/wrapper/maven-wrapper.jar
+.idea/
+*.iml
+.project
+.settings/
+.vscode/
+
+# Python / ML
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+*.joblib
+!ai-service/app/traffic_model.joblib
+!ai-service/app/traffic_scaler.joblib
+!ai-service/app/model_metrics.joblib
+*.pkl
+
+# Database
+postgres_data/

@@ -1,0 +1,13 @@
+#!/bin/sh
+# Maven wrapper script for Linux/Mac/Docker
+DIR="$(cd "$(dirname "$0")" && pwd)"
+if command -v mvn >/dev/null 2>&1; then
+    exec mvn "$@"
+elif [ -x "$DIR/apache-maven-3.9.6/bin/mvn" ]; then
+    exec "$DIR/apache-maven-3.9.6/bin/mvn" "$@"
+elif [ -x "$DIR/../../apache-maven-3.9.6/bin/mvn" ]; then
+    exec "$DIR/../../apache-maven-3.9.6/bin/mvn" "$@"
+else
+    echo "Maven not found in PATH or project directory."
+    exit 1
+fi
